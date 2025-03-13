@@ -1,0 +1,78 @@
+sudo apt update
+sudo apt upgrade
+sudo apt install nginx
+sudo apt install apache2
+sudo nano /etc/apache2/ports.conf
+
+write this on nano terminal:-
+Listen 8080
+
+<IfModule ssl_module>
+        Listen 443
+</IfModule>
+
+<IfModule mod_gnutls.c>
+        Listen 443
+</IfModule>
+
+
+
+
+sudo nano /etc/apache2/sites-available/000-default.conf
+
+ write this on nano terminal:-
+ 
+ <VirtualHost *:8080>
+       
+       DocumentRoot /var/www/html
+        <Directory /var/www/html>
+           Options Indexes FollowSymlinks
+           AllowOverride  All
+           Require all granted
+        </Directory>
+
+</VirtualHost>
+
+
+
+
+
+sudo systemctl restart apache2
+sudo systemctl daemon-reload
+sudo systemctl restart apache2
+sudo nano /etc/nginx/sites-available/reverse-proxy
+
+write this on nano terminal:-
+
+Server{
+    listen 80;
+    #server_name project.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location  /static/ {
+     alias /var/www/html/static/;
+      expires 30d;
+    }
+}
+
+
+
+sudo ln -s /etc/nginx/sites-available/reverse-proxy  /etc/nginx/sites-enabled/
+
+sudo nginx -t
+
+sudo systemctl restart nginx
+
+echo "<h1> hello from  apache </h1>" | sudo tee /var/www/html/index.html
+
+
+now go to firefox browser and search http://127.0.0.1
+
+
